@@ -1,5 +1,6 @@
 # Copyright 2011 Obsidian Research Corp. GPLv2, see COPYING.
 import rdma;
+import logging;
 import collections;
 import rdma.path;
 import rdma.satransactor;
@@ -319,7 +320,12 @@ class _SubnetTopo(object):
     def do_node(self,path,depth=0,peer=None):
         """Coroutine to get the :class:`~rdma.IBA.SMPNodeInfo` and scan all the
         port infos."""
-        ninf = yield self.sched.SubnGet(IBA.SMPNodeInfo,path);
+        try:
+            ninf = yield self.sched.SubnGet(IBA.SMPNodeInfo,path);
+        except rdma.RDMAError as err:
+            logging.error(err) 
+            return
+
         node,port = self.sbn.get_node_ninf(ninf,path);
 
         if isinstance(node,rdma.subnet.Switch):
