@@ -294,7 +294,12 @@ class _SubnetTopo(object):
     def do_port(self,path,node,aport,portIdx,depth):
         """Coroutine to get a :class:`~rdma.IBA.SMPPortInfo` and schedule
         scanning the attached node, if applicable."""
-        pinf = yield self.sched.SubnGet(IBA.SMPPortInfo,path,portIdx);
+        try:
+            pinf = yield self.sched.SubnGet(IBA.SMPPortInfo,path,portIdx)
+        except rdma.RDMAError as e:
+            logging.error(e)
+            pinf = IBA.SMPPortInfo()
+            pinf.portState = IBA.PORT_STATE_DOWN
         aport = self.sbn.get_port_pinf(pinf,path=path,portIdx=portIdx);
 
         if self.lid_route and isinstance(path,rdma.path.IBDRPath):
